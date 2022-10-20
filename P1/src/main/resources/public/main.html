@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Main Menu</title>
+
+    
+</head>
+
+<body onload="loadPageOfCurrentUser()" style="background-color: rgb(255, 166, 0);">
+        <button id="logOut" type="button" onclick="LO()">Log Out</button>
+        <h1 id="welcome">Welcome</h1> 
+
+    <button id="createRe" type="button" onclick="NR()">New Reimbursement</button><br>
+    <br>
+    <br>
+
+    <h2 id="currentRe">Current Requests<br>
+    <br>
+ 
+    <div id="reData" class="container">
+        <table id="reimTable" class="table" border="5">
+            <thead>
+                <tr>
+                    <th>Reimbursement form ID</th>
+                    <th>Date of event</th>
+                    <th>Time of event</th>
+                    <th>Location of event</th>
+                    <th>Description</th>
+                    <th>Cost of event</th>
+                    <th>Passed/Failed</th>
+                    <th>Type of Event</th>
+                    <th>Work-related justification</th>
+                    <th>Funds</th>
+                    <th>Status</th>
+                    
+                </tr>
+            </thead>
+            <tbody id="reTableBody">
+                
+            </tbody>
+        </table>
+        </div>
+        <br>
+   
+    
+   
+    
+    <script>
+        let baseUrl = "http://localhost:8080"
+        let manager = sessionStorage.getItem("manager");
+        
+        
+        function NR() {
+            document.location.assign("./SR.html");
+        }
+
+        function LO() {
+            sessionStorage.clear();
+            window.location.assign('./home.html');
+        }
+
+        async function loadPageOfCurrentUser() {
+            let name = sessionStorage.getItem("userName");
+            let manager = sessionStorage.getItem("manager");
+            document.getElementById("welcome").innerHTML = `Welcome back, ${name}.`
+            let id = sessionStorage.getItem("userId");
+            let res = await fetch(`${baseUrl}/create/${id}`);
+
+            if (res.status === 200) {
+                let resJson = await res.json();
+                console.log(resJson);
+                let updated = resJson;
+                
+                updated.forEach( form => {update(form);
+                    
+                });
+                
+            } else {
+                console.log('whoops');
+            }
+            
+        }
+
+
+        function update(newRe) {
+            let newReTable = document.getElementById('reTableBody');
+            let newReTr = document.createElement("tr");
+            
+            let reIdTD = document.createElement('td');
+            reIdTD.innerHTML = (newRe).re_id; 
+            
+            let dateTD = document.createElement('td');
+            dateTD.innerHTML = (newRe).event_date;
+
+            let timeTD = document.createElement('td');
+            timeTD.innerHTML = (newRe).event_time;
+
+            let locationTD = document.createElement('td');
+            locationTD.innerHTML = (newRe).event_location;
+
+            let descriptionTD = document.createElement('td');
+            descriptionTD.innerHTML = (newRe).description;
+
+            let costTD = document.createElement('td');
+            costTD.innerHTML = (newRe).event_cost;
+
+            let passedTD = document.createElement('td');
+            passedTD.innerHTML = (newRe).passed;
+
+            let typeTD = document.createElement('td');
+            typeTD.innerHTML = (newRe).event_type;
+
+            let justificationTD = document.createElement('td');
+            justificationTD.innerHTML = (newRe).event_justification;
+
+            let fundsTD = document.createElement('td');
+            fundsTD.innerHTML = sessionStorage.getItem('funds');
+            
+            let statusTD = document.createElement('td');
+            statusTD.innerHTML = (newRe).status;
+
+
+            let editTD = document.createElement('td');
+            editTD.innerHTML = `<button id='editB' type='button' onclick="managerEdit(event)">Edit</button>`;
+            
+            if(manager === 'true') {
+                newReTr.append(reIdTD,dateTD,timeTD,locationTD,descriptionTD,costTD,passedTD,typeTD,justificationTD,fundsTD,statusTD,editTD);
+                newReTable.append(newReTr);
+            } else{
+            newReTr.append(reIdTD,dateTD,timeTD,locationTD,descriptionTD,costTD,passedTD,typeTD,justificationTD,fundsTD,statusTD);
+            newReTable.append(newReTr);
+            }
+
+        }
+
+         function managerEdit(event) {
+            console.log(event.path);
+            let reTr = event.path[2];
+            sessionStorage.setItem('reid',reTr.childNodes[0].innerHTML);
+            document.location.assign('./manager.html');
+        }
+    </script>
+
+</body>
+</html>
